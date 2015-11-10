@@ -222,4 +222,7 @@ STOP_WORDS_PT_BR = ['de',
 'teri',
 'teríamo',
 'teriam',
-'-']
+'-',
+'é',
+'ver',
+'vem']

@@ -1,7 +1,10 @@
-from TwitterAPI import TwitterAPI
+# -*- coding: utf-8 -*-
+from TwitterAPI import TwitterAPI, TwitterRestPager
 
 #entrada da pesquisa desejada
-SEARCH_TERM = input('Digite a tag que deseja : ')
+SEARCH_TERM = raw_input('Digite a tag que deseja : ')
+SEARCH_SIZE = raw_input('Digite a profundidade da busca (1-10): ')
+SEARCH_SIZE = int(SEARCH_SIZE)
 
 #dados da API
 CONSUMER_KEY = '84807B0PDDfuoNRqJQPHrJWrb'
@@ -15,13 +18,24 @@ api = TwitterAPI(CONSUMER_KEY,
                  ACCESS_TOKEN_SECRET)
 
 #requisição
-r = api.request('search/tweets', {'q': '#'+SEARCH_TERM.strip()})
+r = api.request('search/tweets', {'q': '#'+SEARCH_TERM.strip(), 'count':(10 * SEARCH_SIZE)})
 
+count = 0
 #impressão
 for item in r:
-    print( '\n' )
-    print( ascii(item['user']['name'] + ' - ' + item['text']) if 'text' in item else item)
+    count += 1
+    print(item['user']['name'] + ' - ' + item['text'] if 'text' in item else item)
 
+"""
+r = TwitterRestPager(api, 'search/tweets', {'q':SEARCH_TERM, 'count':10 })
+
+for item in r.get_iterator():
+    if 'text' in item:
+        print item['text']
+    elif 'message' in item and item['code'] == 88:
+        print 'SUSPEND, RATE LIMIT EXCEEDED: %s\n' % item['message']
+        break
+"""
 #resultados estatisticos
 print('\nQUOTA: %s' % r.get_rest_quota())
- 
+print('\LENGTH: %s' % count)

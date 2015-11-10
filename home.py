@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from urlparse import urlparse, parse_qs
 from flask import Flask, jsonify
 from TwitterAPI import TwitterAPI, TwitterRestPager
 from instagram import client, subscriptions
@@ -31,7 +32,7 @@ instagram_api = client.InstagramAPI(
                     client_secret=config[ 'instagram']['CLIENT_SECRET'])
 
 app = Flask(__name__)
-#app.debug = True
+app.debug = True
 
 @app.route('/')
 def hello():
@@ -46,12 +47,13 @@ def query_twitter(hashtag, depth):
     print('Querying hashtag %s with depth %s' % (hashtag, depth))
 
     #requisição
-    r = twitter_api.request('search/tweets', {'q': '#'+hashtag.strip(), 'count':(10 * depth)})
+    r = twitter_api.request('search/tweets', {'q': '#'+hashtag.strip(), 'lang': 'pt', 'count':(10 * depth)})
 
     #impressão
     tweets = [
         {
             'url': '',
+            'id': item['id_str'],
             'likes': item['retweet_count'],
             'text': item['text'],
             'user': item['user']['name']
@@ -69,14 +71,32 @@ def query_twitter(hashtag, depth):
 @app.route('/query_instagram/<hashtag>', defaults={'depth': 1})
 @app.route('/query_instagram/<hashtag>/<int:depth>')
 def query_instagram(hashtag, depth):
-    tag_recent_media, next = instagram_api.tag_recent_media(tag_name=hashtag.strip())
-    photos = [
-        {
-            'url': x.get_standard_resolution_url(),
-            'likes': x.like_count,
-            'text': x.caption.text
-        }
-        for x in tag_recent_media
-    ]
+    photos = []
+
+    tag_recent_media, next = instagram_api.tag_recent_media(tag_name=hashtag.strip(), count=10)
+
+    print(next)
+    qs = parse_qs(urlparse(next).query)
+    print(qs)
+
+    # Executa ate ter terminado o peso
+    while next and depth > 0:
+        photos = photos + [
+            {
+                'url': x.get_standard_resolution_url(),
+                'id': x.id,
+                'likes': x.like_count,
+                'text': x.caption.text,
+                'user': ''
+            }
+            for x in tag_recent_media
+        ]
+
+        # Get the next page
+        depth -= 1
+        tag_recent_media, next = instagram_api.tag_recent_media(tag_name=hashtag.strip(), count=10, max_id=qs['max_tag_id'])
 
     return jsonify(data=photos)
+
+if __name__ == '__main__':
+    app.run()

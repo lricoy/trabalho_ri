@@ -2,7 +2,8 @@
 import os
 from collections import Counter
 from urlparse import urlparse, parse_qs
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
+from flask.ext.cors import CORS
 from TwitterAPI import TwitterAPI, TwitterRestPager
 from instagram import client, subscriptions
 from constants import STOP_WORDS_PT_BR
@@ -35,10 +36,11 @@ instagram_api = client.InstagramAPI(
 
 app = Flask(__name__)
 app.debug = True
+CORS(app)
 
 @app.route('/')
 def hello():
-    return 'Hello World!'
+    return render_template('index.html')
 
 """
     ROUTE TO QUERY TWITTER

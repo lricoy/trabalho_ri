@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# FONTES:
+# https://github.com/wooorm/emoji-emotion/blob/master/Support.md
+# https://gist.github.com/alopes/5358189
 STOP_WORDS_PT_BR = ['de',
 'a',
 'o',

@@ -170,10 +170,12 @@
            });
            $('#mais-usadas').fadeIn('slow');
 
-
            $.each( data.data, function( i, item ) {
+             var polarityIcon = item.polarity.polarity > 0 ? {icon: 'mood', color:'green'} : {icon: 'mood bad', color:'red'};
+             polarityIcon = item.polarity.polarity == 0 ? {icon: 'person', color:'gray'} : polarityIcon;
+
              var newItem = $('<li class="collection-item avatar">' +
-            '<i class="material-icons circle green">mood</i><span class="title">'+ item.user +'</span><p>'+ item.text +'</p>' +
+            '<i class="material-icons circle '+polarityIcon.color+'">'+polarityIcon.icon+'</i><span class="title">'+ item.user +'</span><p>'+ item.text +'</p>' +
             '<a href="#!" class="secondary-content">'+
             '<i class="fa fa-twitter"></i></a></li>'
             );

@@ -171,7 +171,7 @@
            $('#mais-usadas').fadeIn('slow');
 
            $.each( data.data, function( i, item ) {
-             var polarityIcon = item.polarity.polarity > 0 ? {icon: 'mood', color:'green'} : {icon: 'mood bad', color:'red'};
+             var polarityIcon = item.polarity.polarity > 0 ? {icon: 'mood', color:'green'} : {icon: 'mood_bad', color:'red'};
              polarityIcon = item.polarity.polarity == 0 ? {icon: 'person', color:'gray'} : polarityIcon;
 
              var newItem = $('<li class="collection-item avatar">' +

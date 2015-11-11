@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <!-- Compiled and minified CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.2/css/materialize.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 </head>
 <body>
   <nav class="light-blue lighten-1" role="navigation">
@@ -22,6 +23,7 @@
       <div class="row center">
         <h5 class="header col s12 light">Trabalho realizado para a disciplina de Recuperação de Informação 2015/02</h5>
       </div>
+
 
     </div>
   </div>
@@ -63,14 +65,43 @@
 
     </div>
 
-    <!-- Results -->
-    <div class="section">
-      Palavras mais usadas:
-      <div id="mais-usadas">
-
+    <!-- <div class="container">
+      <div class="section valign-wrapper">
+        <div class="row valign">
+          <div class="col s12">
+            <div class="preloader-wrapper active " id="loader">
+              <div class="spinner-layer spinner-red-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div><div class="gap-patch">
+                  <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div id="resultados">
+    </div> -->
 
+
+    <!-- Results -->
+    <div class="section" style="margin-top: -6rem;min-height: 200px;">
+      <div id="results-section">
+        <p>
+          Palavras mais usadas:
+        </p>
+        <div id="mais-usadas">
+
+        </div>
+
+        <p>
+          Resultados:
+        </p>
+        <div id="resultados">
+
+        </div>
       </div>
     </div>
   </div>
@@ -110,6 +141,8 @@
  <script>
  $(document).ready(function() {
      $('select').material_select();
+     $('#loader').hide();
+     $('#results-section').hide();
  });
 
  $('#btn-search').click(function() {
@@ -119,20 +152,34 @@
      var apiUrl = "query_twitter/";
      apiUrl = apiUrl+hashtag+ '/' +  profundidade;
 
+     $('#index-banner').fadeOut('slow');
+     $('#loader').fadeIn();
+     $('#mais-usadas').fadeOut('slow').html('<ol></ol>');
+     $('#resultados').fadeOut('slow').html('<ul class="collection"></ul>');
+     $('#results-section').css('min-height', '600px');
+
      $.getJSON(apiUrl, {})
          .done(function( data ) {
 
+           $('#results-section').show();
+           $('#loader').fadeOut();
+
            console.log(data);
-           $('#mais-usadas').html('<ol></ol>');
            $.each( data.top_words, function( i, item ) {
-             $("<li><b>"+ item[0] + "</b>:" + item[1]+"</li>").appendTo('#mais-usadas');
+             $('#mais-usadas > ol').append($("<li><b>"+ item[0] + "</b>:" + item[1]+"</li>"));
            });
+           $('#mais-usadas').fadeIn('slow');
 
 
-           $('#resultados').html('');
            $.each( data.data, function( i, item ) {
-             $( "<div>"+ item.text +"</div>" ).appendTo( "#resultados" );
+             var newItem = $('<li class="collection-item avatar">' +
+            '<i class="material-icons circle green">mood</i><span class="title">'+ item.user +'</span><p>'+ item.text +'</p>' +
+            '<a href="#!" class="secondary-content">'+
+            '<i class="fa fa-twitter"></i></a></li>'
+            );
+             $('#resultados > ul').append(newItem);
            });
+           $('#resultados').fadeIn('slow');
          });
  });
  </script>

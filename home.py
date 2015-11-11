@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
+from decimal import Decimal, getcontext
 from collections import Counter
 from urlparse import urlparse, parse_qs
 from flask import Flask, jsonify, render_template
 from flask.ext.cors import CORS
 from TwitterAPI import TwitterAPI, TwitterRestPager
 from instagram import client, subscriptions
-from constants import STOP_WORDS_PT_BR
+from constants import STOP_WORDS_PT_BR, PONTOS_POLARIDADE
 
 config = {
     'instagram': {
@@ -59,13 +60,16 @@ def query_twitter(hashtag, depth):
             'url': '',
             'id': item['id_str'],
             'likes': item['retweet_count'],
-            'text': item['text'],
+            'text': item['text'].encode('utf8'),
             'normalized_text': normalize_text(item['text']),
             'user': item['user']['name']
         }
         for item in r
     ]
-    #tweets = [] TO-DO: normalize text | remove stop words
+
+    # polarity measure
+    for tweet in tweets: tweet['polarity'] = polarity_measure(tweet['normalized_text'])
+
     words_in_tweets = ''.join([ item['normalized_text'] for item in tweets ]).split()
     most_used_words = Counter(words_in_tweets).most_common(10)
 
@@ -102,6 +106,9 @@ def query_instagram(hashtag, depth):
         depth -= 1
         tag_recent_media, next = instagram_api.tag_recent_media(tag_name=hashtag.strip(), count=10, max_id=qs['max_tag_id'])
 
+    # Polarity
+    for photo in photos: photo['polarity'] = polarity_measure(photo['normalized_text'])
+
     words_in_captions = ''.join([ item['normalized_text'] for item in photos ]).split()
     most_used_words = Counter(words_in_captions).most_common(10)
 
@@ -109,7 +116,37 @@ def query_instagram(hashtag, depth):
 
 # util
 def normalize_text(text):
-    return ' '.join([word for word in text.lower().split() if word not in STOP_WORDS_PT_BR])
+    return ' '.join([ unicode(word) for word in text.lower().split() if word not in STOP_WORDS_PT_BR])
+
+def polarity_measure(text):
+    def _get_points(word):
+        if(PONTOS_POLARIDADE.has_key(word)):
+            return PONTOS_POLARIDADE[word]
+        return 0
+
+    getcontext().prec = 6
+
+    points_per_word = [ (word, _get_points(word)) for word in text.split() ]
+    word_count = len(points_per_word)
+
+    happy = [ x[0] for x in points_per_word if x[1] > 0 ]
+    happy_percent = Decimal(len(happy)) / Decimal(word_count) * 100 if len(happy) > 0 else 0
+
+    sad = [ x[0] for x in points_per_word if x[1] < 0 ]
+    sad_percent = Decimal(len(sad)) / Decimal(word_count) * 100 if len(sad) > 0 else 0
+
+    polarity_sum = sum([x[1] for x in points_per_word])
+
+    return {
+        #'points_per_word': points_per_word,
+        'happy_words': happy,
+        'happy_percent': happy_percent,
+        'sad_words': sad,
+        'sad_percent': sad_percent,
+        'polarity': polarity_sum,
+        'word_count': word_count
+    }
+
 
 if __name__ == '__main__':
     app.run()

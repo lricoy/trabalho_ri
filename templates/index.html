@@ -97,6 +97,13 @@
         </div>
 
         <p>
+          Percentual dos resultados
+        </p>
+        <div id="result-percent">
+
+        </div>
+
+        <p>
           Resultados:
         </p>
         <div id="resultados">
@@ -155,6 +162,7 @@
      $('#index-banner').fadeOut('slow');
      $('#loader').fadeIn();
      $('#mais-usadas').fadeOut('slow').html('<ol></ol>');
+     $('#result-percent').fadeOut('slow').html('<ol></ol>');
      $('#resultados').fadeOut('slow').html('<ul class="collection"></ul>');
      $('#results-section').css('min-height', '600px');
 
@@ -163,6 +171,10 @@
 
            $('#results-section').show();
            $('#loader').fadeOut();
+           $('#result-percent').fadeIn();
+
+           $('#result-percent').append("<li>Felizes: "+ data.percent.happy +"%</li>");
+           $('#result-percent').append("<li>Tristes: "+ data.percent.sad +"%</li>");
 
            console.log(data);
            $.each( data.top_words, function( i, item ) {

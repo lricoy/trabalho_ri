@@ -135,10 +135,14 @@ def query_both(hashtag, depth):
     words_in_all_data = ''.join([ item['normalized_text'] for item in all_data ]).split()
     most_used_words = Counter(words_in_all_data).most_common(10)
 
+    percent = {}
+    percent['happy'] = Decimal(len([word for word in all_data if word['polarity']['polarity'] > 0])) / Decimal(len(all_data)) * 100
+    percent['sad'] = Decimal(len([word for word in all_data if word['polarity']['polarity'] < 0])) / Decimal(len(all_data)) * 100
+
     # Tendo em vista que nao possuem data e tem o mesmo peso, embaralha os resultados
     shuffle(all_data)
 
-    return jsonify(data=all_data, top_words=most_used_words)
+    return jsonify(data=all_data, top_words=most_used_words, percent=percent)
 
 # util
 def normalize_text(text, hashtag):

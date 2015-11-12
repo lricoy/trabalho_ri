@@ -1,6 +1,8 @@
 ###Trabalho de Recuperação de Informação em Redes Sociais.
 O objetivo deste trabalho é apresentar ao aluno conceitos básicos da arquitetura de um sistema de busca.
 
+![Heroku](https://heroku-badge.herokuapp.com/?app=trabalho-ri&style=flat)
+
 # Requisitos
 1. O trabalho deve coletar a informação em 2 redes sociais
 2. O usuário deve ser capaz de especificar qual Hash Tag será

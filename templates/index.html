@@ -149,7 +149,7 @@
      var hashtag = $('#hashtag').val();
      var profundidade = $('#profundidade').val();;
 
-     var apiUrl = "query_twitter/";
+     var apiUrl = "query/";
      apiUrl = apiUrl+hashtag+ '/' +  profundidade;
 
      $('#index-banner').fadeOut('slow');
@@ -174,10 +174,16 @@
              var polarityIcon = item.polarity.polarity > 0 ? {icon: 'mood', color:'green'} : {icon: 'mood_bad', color:'red'};
              polarityIcon = item.polarity.polarity == 0 ? {icon: 'person', color:'gray'} : polarityIcon;
 
+             polarityIcon.source = item.source === 'twitter' ? 'fa-twitter' : 'fa-instagram';
+
              var newItem = $('<li class="collection-item avatar">' +
-            '<i class="material-icons circle '+polarityIcon.color+'">'+polarityIcon.icon+'</i><span class="title">'+ item.user +'</span><p>'+ item.text +'</p>' +
-            '<a href="#!" class="secondary-content">'+
-            '<i class="fa fa-twitter"></i></a></li>'
+            '<i class="material-icons circle '+polarityIcon.color+'">'+polarityIcon.icon+'</i><span class="title">'+ item.user +'</span>'+
+            '<p>'+ item.text +'</p>' +
+            '<hr />'+
+            '<p> '+item.polarity.happy_percent.toFixed(2)+'% de felicidade. Palavras felizes:'+ item.polarity.happy_words +'</p>' +
+            '<p> '+item.polarity.sad_percent.toFixed(2)+'% de tristeza. Palavras tristes:'+ item.polarity.sad_words +'</p>' +
+            '<a href="'+item.url+'" class="secondary-content">'+
+            '<i class="fa '+polarityIcon.source+'"></i></a></li>'
             );
              $('#resultados > ul').append(newItem);
            });

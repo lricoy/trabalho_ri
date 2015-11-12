@@ -46,9 +46,7 @@ def hello():
 """
     ROUTE TO QUERY TWITTER
 """
-@app.route('/query_twitter/<hashtag>', defaults={'depth': 1})
-@app.route('/query_twitter/<hashtag>/<int:depth>')
-def query_twitter(hashtag, depth):
+def _query_twitter(hashtag, depth):
     print('Querying hashtag %s with depth %s' % (hashtag, depth))
 
     #requisição
@@ -61,8 +59,9 @@ def query_twitter(hashtag, depth):
             'id': item['id_str'],
             'likes': item['retweet_count'],
             'text': item['text'].encode('utf8'),
-            'normalized_text': normalize_text(item['text']),
-            'user': item['user']['name']
+            'normalized_text': normalize_text(item['text'], hashtag),
+            'user': item['user']['name'],
+            'source': 'twitter'
         }
         for item in r
     ]
@@ -70,19 +69,21 @@ def query_twitter(hashtag, depth):
     # polarity measure
     for tweet in tweets: tweet['polarity'] = polarity_measure(tweet['normalized_text'])
 
+    return tweets
+
+@app.route('/query_twitter/<hashtag>', defaults={'depth': 1})
+@app.route('/query_twitter/<hashtag>/<int:depth>')
+def query_twitter(hashtag, depth):
+    tweets = _query_twitter(hashtag, depth)
     words_in_tweets = ''.join([ item['normalized_text'] for item in tweets ]).split()
     most_used_words = Counter(words_in_tweets).most_common(10)
-
-    # TO-DO: http://stackoverflow.com/questions/3594514/how-to-find-most-common-elements-of-a-list
-
     return jsonify(data=tweets, top_words=most_used_words)
+
 
 """
     ROUTE TO QUERY INSTAGRAM
 """
-@app.route('/query_instagram/<hashtag>', defaults={'depth': 1})
-@app.route('/query_instagram/<hashtag>/<int:depth>')
-def query_instagram(hashtag, depth):
+def _query_instagram(hashtag, depth):
     photos = []
 
     tag_recent_media, next = instagram_api.tag_recent_media(tag_name=hashtag.strip(), count=10)
@@ -96,8 +97,9 @@ def query_instagram(hashtag, depth):
                 'id': x.id,
                 'likes': x.like_count,
                 'text': x.caption.text,
-                'normalized_text': normalize_text(x.caption.text),
-                'user': ''
+                'normalized_text': normalize_text(x.caption.text, hashtag),
+                'user': '',
+                'source': 'instagram'
             }
             for x in tag_recent_media
         ]
@@ -109,20 +111,43 @@ def query_instagram(hashtag, depth):
     # Polarity
     for photo in photos: photo['polarity'] = polarity_measure(photo['normalized_text'])
 
+    return photos
+
+@app.route('/query_instagram/<hashtag>', defaults={'depth': 1})
+@app.route('/query_instagram/<hashtag>/<int:depth>')
+def query_instagram(hashtag, depth):
+    photos = _query_instagram(hashtag, depth)
     words_in_captions = ''.join([ item['normalized_text'] for item in photos ]).split()
     most_used_words = Counter(words_in_captions).most_common(10)
-
     return jsonify(data=photos, top_words=most_used_words)
 
+"""
+    ROUTE TO BOTH at the same time
+"""
+@app.route('/query/<hashtag>', defaults={'depth': 1})
+@app.route('/query/<hashtag>/<int:depth>')
+def query_both(hashtag, depth):
+    instagram = _query_instagram(hashtag, depth)
+    twitter = _query_twitter(hashtag, depth)
+
+    all_data = instagram + twitter
+    words_in_all_data = ''.join([ item['normalized_text'] for item in all_data ]).split()
+    most_used_words = Counter(words_in_all_data).most_common(10)
+
+    return jsonify(data=all_data, top_words=most_used_words)
+
 # util
-def normalize_text(text):
-    return ' '.join([ unicode(word) for word in text.lower().split() if word not in STOP_WORDS_PT_BR])
+def normalize_text(text, hashtag):
+    return ' '.join([ unicode(word) for word in text.lower().split() if word not in STOP_WORDS_PT_BR and word != '#%s' % hashtag])
 
 def polarity_measure(text):
     def _get_points(word):
         if(PONTOS_POLARIDADE.has_key(word)):
+            #print(word, 1)
             return PONTOS_POLARIDADE[word]
-        return 0
+        else:
+            #print(word, 0)
+            return 0
 
     getcontext().prec = 6
 
@@ -138,7 +163,7 @@ def polarity_measure(text):
     polarity_sum = sum([x[1] for x in points_per_word])
 
     return {
-        #'points_per_word': points_per_word,
+        'points_per_word': points_per_word,
         'happy_words': happy,
         'happy_percent': happy_percent,
         'sad_words': sad,
@@ -146,7 +171,6 @@ def polarity_measure(text):
         'polarity': polarity_sum,
         'word_count': word_count
     }
-
 
 if __name__ == '__main__':
     app.run()

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from random import shuffle
 from decimal import Decimal, getcontext
 from collections import Counter
 from urlparse import urlparse, parse_qs
@@ -133,6 +134,9 @@ def query_both(hashtag, depth):
     all_data = instagram + twitter
     words_in_all_data = ''.join([ item['normalized_text'] for item in all_data ]).split()
     most_used_words = Counter(words_in_all_data).most_common(10)
+
+    # Tendo em vista que nao possuem data e tem o mesmo peso, embaralha os resultados
+    shuffle(all_data)
 
     return jsonify(data=all_data, top_words=most_used_words)
 

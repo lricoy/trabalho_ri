@@ -229,7 +229,10 @@ STOP_WORDS_PT_BR = ['de',
     u'vem',
     u'!',
     u'?',
-    '@'
+    '@',
+    u'.',
+    u',',
+    u';',
 ]
 
 # Lista de palavras e emojis e seus respectivos pontos

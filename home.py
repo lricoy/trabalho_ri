@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-import os
+import os, re
 from random import shuffle
 from decimal import Decimal, getcontext
+from unidecode import unidecode
 from collections import Counter
 from urlparse import urlparse, parse_qs
 from flask import Flask, jsonify, render_template
@@ -145,8 +146,9 @@ def query_both(hashtag, depth):
     return jsonify(data=all_data, top_words=most_used_words, percent=percent)
 
 # util
+
 def normalize_text(text, hashtag):
-    return ' '.join([ unicode(word) for word in text.lower().split() if word not in STOP_WORDS_PT_BR and word != '#%s' % hashtag])
+    return ' '.join([ unidecode(unicode(re.sub('[!,;.-?]', '', word))) for word in text.lower().split() if word not in STOP_WORDS_PT_BR and word != '#%s' % hashtag])
 
 def polarity_measure(text):
     def _get_points(word):

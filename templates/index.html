@@ -88,19 +88,55 @@
 
     <!-- Results -->
     <div class="section" style="margin-top: -6rem;min-height: 200px;">
-      <div id="results-section">
-        <p>
-          Palavras mais usadas:
-        </p>
-        <div id="mais-usadas">
+
+        <div class="row">
+          <div class="col s12">
+            <div id="results-section">
+
+              <div  class="col s6">
+                <p>
+                  Palavras mais usadas:
+                </p>
+                <div id="mais-usadas">
+
+                </div>
+              </div>
+
+              <div class="col s6">
+                <p>
+                  Percentual dos resultados
+                </p>
+                <div id="result-percent" >
+
+                </div>
+              </div>
+
+          </div>
 
         </div>
 
-        <p>
-          Percentual dos resultados
-        </p>
-        <div id="result-percent">
 
+        <div class="row">
+          <form action="#" class="col s6 offset-s3">
+            <div class="input-field col s4">
+              <p>
+                <input type="checkbox" id="check_happy" checked="checked"/>
+                <label for="check_happy">Felizes</label>
+              </p>
+            </div>
+            <div class="input-field col s4">
+              <p>
+                <input type="checkbox" id="check_sad" checked="checked" />
+                <label for="check_sad">Tristes</label>
+              </p>
+            </div>
+            <div class="input-field col s4">
+              <p>
+                <input type="checkbox" id="check_neutral" checked="checked" />
+                <label for="check_neutral">Neutros</label>
+              </p>
+            </div>
+          </form>
         </div>
 
         <p>
@@ -110,6 +146,7 @@
 
         </div>
       </div>
+
     </div>
   </div>
 
@@ -150,6 +187,16 @@
      $('select').material_select();
      $('#loader').hide();
      $('#results-section').hide();
+
+     $('#check_happy').click(function(){
+       $('#check_happy').is(":checked") == false ? $('.happy').fadeOut() : $('.happy').fadeIn();
+     });
+     $('#check_neutral').click(function(){
+       $('#check_neutral').is(":checked") == false ? $('.neutral').fadeOut() : $('.neutral').fadeIn();
+     });
+     $('#check_sad').click(function(){
+       $('#check_sad').is(":checked") == false ? $('.sad').fadeOut() : $('.sad').fadeIn();
+     });
  });
 
  $('#btn-search').click(function() {
@@ -159,15 +206,17 @@
      var apiUrl = "query/";
      apiUrl = apiUrl+hashtag+ '/' +  profundidade;
 
-     $('#index-banner').fadeOut('slow');
+    // $('.input[type=checkbox]').prop('checked', true);
+
      $('#loader').fadeIn();
      $('#mais-usadas').fadeOut('slow').html('<ol></ol>');
      $('#result-percent').fadeOut('slow').html('<ol></ol>');
      $('#resultados').fadeOut('slow').html('<ul class="collection"></ul>');
-     $('#results-section').css('min-height', '600px');
+    //  $('#results-section').css('min-height', '600px');
 
      $.getJSON(apiUrl, {})
          .done(function( data ) {
+           $('#index-banner').fadeOut('slow');
 
            $('#results-section').show();
            $('#loader').fadeOut();
@@ -183,12 +232,12 @@
            $('#mais-usadas').fadeIn('slow');
 
            $.each( data.data, function( i, item ) {
-             var polarityIcon = item.polarity.polarity > 0 ? {icon: 'mood', color:'green'} : {icon: 'mood_bad', color:'red'};
-             polarityIcon = item.polarity.polarity == 0 ? {icon: 'person', color:'gray'} : polarityIcon;
+             var polarityIcon = item.polarity.polarity > 0 ? {icon: 'mood', color:'green', classe:'happy'} : {icon: 'mood_bad', color:'red', classe:'sad'};
+             polarityIcon = item.polarity.polarity == 0 ? {icon: 'person', color:'gray', classe:'neutral'} : polarityIcon;
 
              polarityIcon.source = item.source === 'twitter' ? 'fa-twitter' : 'fa-instagram';
 
-             var newItem = $('<li class="collection-item avatar">' +
+             var newItem = $('<li class="collection-item avatar '+ polarityIcon.classe +'">' +
             '<i class="material-icons circle '+polarityIcon.color+'">'+polarityIcon.icon+'</i><span class="title">'+ item.user +'</span>'+
             '<p>'+ item.text +'</p>' +
             '<hr />'+
